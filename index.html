@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thai ⇄ English Keyboard Key Translator (Kedmanee ↔ QWERTY)</title>
+  <meta name="description" content="Convert text typed on the wrong keyboard layout between Thai Kedmanee and English QWERTY (both directions). Single-file, offline-ready." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a33;
+      --panel-2: #0e1530;
+      --text: #eaf0ff;
+      --muted: #9fb0ffb0;
+      --brand: #6ea8ff;
+      --brand-2: #80ffd3;
+      --border: #223059;
+      --ok: #7ef6a2;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; padding:24px; background:radial-gradient(1200px 600px at 80% -10%, #19306033, transparent), radial-gradient(1200px 600px at 0% 120%, #0c2b2a3a, transparent), var(--bg);
+      color:var(--text); font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    h1{margin:0 0 8px; font-size:clamp(20px, 3.8vw, 32px); font-weight:700; letter-spacing:0.2px}
+    .sub{color:var(--muted); margin-bottom:24px}
+    .app{max-width:1100px; margin:0 auto;}
+    .grid{display:grid; grid-template-columns:1fr; gap:16px}
+    @media (min-width: 980px){ .grid{grid-template-columns: 1fr 1fr;} }
+
+    .card{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:18px; padding:16px; box-shadow:0 10px 30px #00000040}
+    .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+    label{font-size:14px; color:var(--muted)}
+    select, button, textarea, input[type="checkbox"]{font:inherit}
+    textarea{
+      width:100%; min-height:260px; resize:vertical; border-radius:12px; padding:12px 14px; background:#0b152f; color:var(--text); border:1px solid var(--border); outline:none;
+      box-shadow:inset 0 0 0 1px transparent; transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    textarea:focus{ border-color:#3657aa; box-shadow:0 0 0 3px #3657aa55 }
+
+    .toolbar{display:flex; flex-wrap:wrap; gap:8px}
+    button{
+      border:1px solid var(--border); background:#0d1a3a; color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; letter-spacing:.2px;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease; user-select:none;
+    }
+    button:hover{ background:#122357; border-color:#334b8f }
+    button:active{ transform: translateY(1px) }
+    .primary{ background:linear-gradient(180deg, #2a5cff, #1d3bb0); border-color:#2b4ed8 }
+    .primary:hover{ background:linear-gradient(180deg, #2f67ff, #2142c2) }
+    .ghost{ background:transparent }
+    .good{ background:linear-gradient(180deg, #1b7a42, #115b31); border-color:#1a7a43 }
+    .badge{ font-size:12px; padding:4px 8px; border-radius:999px; background:#1a2b58; border:1px solid #243c7b; color:#b8c8ff }
+
+    .options{ gap:14px; display:flex; flex-wrap:wrap; align-items:center }
+    .options select{ background:#0b152f; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px }
+    .options .hint{ color:var(--muted); font-size:13px }
+
+    .footer{ color:#94a8ff99; font-size:13px; margin-top:14px }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .kbd{ display:inline-block; border:1px solid var(--border); background:#0b152f; padding:2px 6px; border-radius:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:12px }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Thai ⇄ English Keyboard Key Translator</h1>
+      <div class="sub">Fix text typed on the wrong layout — <strong>Thai Kedmanee</strong> ↔ <strong>English QWERTY</strong>. No tracking, no recording.</div>
+    </header>
+
+    <section class="card">
+      <div class="row options">
+        <label for="direction">Direction</label>
+        <select id="direction" aria-label="Conversion direction">
+          <option value="auto" selected>Auto-detect (recommended)</option>
+          <option value="th2en">Thai → English</option>
+          <option value="en2th">English → Thai</option>
+        </select>
+        <label class="row" style="gap:6px"><input type="checkbox" id="live" checked> Live convert while typing</label>
+        <span class="hint">Layout: <span class="badge">Kedmanee</span></span>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <div>
+          <label for="input" class="mono">Input</label>
+          <textarea id="input" placeholder="Paste or type text here…"></textarea>
+          <div class="toolbar" style="margin-top:8px">
+            <button class="primary" id="convert">Convert (⌘/Ctrl+Enter)</button>
+            <button id="swap">Swap ↔</button>
+            <button class="ghost" id="clear">Clear</button>
+          </div>
+        </div>
+        <div>
+          <label for="output" class="mono">Output</label>
+          <textarea id="output" placeholder="Result will appear here…" readonly></textarea>
+          <div class="toolbar" style="margin-top:8px">
+            <button class="good" id="copy">Copy</button>
+            <button id="download">Download .txt</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        Tip: Auto-detect picks the direction based on whether the input contains Thai letters. You can force a direction from the dropdown.
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <details>
+        <summary style="cursor:pointer; color:#bcd2ff">Show key mapping</summary>
+        <div class="mono" style="margin-top:12px; font-size:13px; line-height:1.6">
+          This tool uses the standard <strong>Thai Kedmanee</strong> layout mapping to US QWERTY. Characters not present in the map are preserved.
+          <div style="margin-top:8px">
+            Source layout reference: Windows Thai Kedmanee (KLID 0000041E).
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <footer class="footer" style="text-align:center; margin-top:14px">
+      No data leaves your device or saving on the server.
+    </footer>
+  </div>
+
+  <script>
+    // Thai (Kedmanee) ↔ English (US QWERTY) mapping
+    // Based on: piruin/th-en-keyboard (MIT) — cleaned and converted to JS objects.
+    // NOTE: This maps by printed character (not physical keycodes), which is exactly what we want for pasted text.
+
+    const pairs = [
+      // TH, EN
+      ['ๅ','1'], ['+','!'], ['๑','@'], ['/','2'], ['-','3'], ['๒','#'], ['ภ','4'], ['๓','$'], ['ถ','5'], ['๔','%'], ['ุ','6'], ['ู','^'], ['ึ','7'], ['฿','&'], ['ค','8'], ['๕','*'], ['ต','9'], ['๖','('], ['จ','0'], ['๗',')'], ['ข','-'], ['๘','_'], ['ช','=' ], ['๙','+'],
+      ['ๆ','q'], ['๐','Q'], ['ไ','w'], ['"','W'], ['ำ','e'], ['ฎ','E'], ['พ','r'], ['ฑ','R'], ['ะ','t'], ['ธ','T'], ['ั','y'], ['ํ','Y'], ['ี','u'], ['๊','U'], ['ร','i'], ['ณ','I'], ['น','o'], ['ฯ','O'], ['ย','p'], ['ญ','P'], ['บ','['], ['ฐ','{'], ['ล',']'], ['ฃ','\\'], ['ฅ','|'],
+      ['ฟ','a'], ['ฤ','A'], ['ห','s'], ['ฆ','S'], ['ก','d'], ['ฏ','D'], ['ด','f'], ['โ','F'], ['เ','g'], ['ฌ','G'], ['้','h'], ['็','H'], ['่','j'], ['๋','J'], ['า','k'], ['ษ','K'], ['ส','l'], ['ศ','L'], ['ว',';'], ['ซ',':'], ['ง','\'' ], ['.','\"'],
+      ['ผ','z'], ['(','Z'], ['ป','x'], [')','X'], ['แ','c'], ['ฉ','C'], ['อ','v'], ['ฮ','V'], ['ิ','b'], ['ฺ','B'], ['ื','n'], ['์','N'], ['ท','m'], ['?','M'], ['ม',','], ['ฒ','<'], ['ใ','.'], ['ฬ','>'], ['ฝ','/'], ['ฦ','?']
+    ];
+
+    const TH_to_EN = Object.fromEntries(pairs);
+    const EN_to_TH = Object.fromEntries(pairs.map(([th,en]) => [en, th]));
+
+    const reThai = /[\u0E00-\u0E7F]/; // Thai block
+
+    function convertText(text, mode = 'auto'){
+      // Decide direction
+      let dir = mode;
+      if (mode === 'auto') {
+        dir = reThai.test(text) ? 'th2en' : 'en2th';
+      }
+      const map = dir === 'th2en' ? TH_to_EN : EN_to_TH;
+      // Replace per character; keep unknowns
+      let out = '';
+      for (const ch of text){
+        out += (map[ch] !== undefined) ? map[ch] : ch;
+      }
+      return out;
+    }
+
+    // DOM wiring
+    const $ = (sel) => document.querySelector(sel);
+    const input = $('#input');
+    const output = $('#output');
+    const direction = $('#direction');
+    const btnConvert = $('#convert');
+    const btnSwap = $('#swap');
+    const btnClear = $('#clear');
+    const btnCopy = $('#copy');
+    const btnDownload = $('#download');
+    const live = $('#live');
+
+    function doConvert(){
+      output.value = convertText(input.value, direction.value);
+    }
+
+    btnConvert.addEventListener('click', doConvert);
+    input.addEventListener('input', () => { if (live.checked) doConvert(); });
+    direction.addEventListener('change', doConvert);
+
+    btnSwap.addEventListener('click', () => {
+      const a = input.value;
+      const b = output.value;
+      input.value = b; output.value = a; doConvert();
+    });
+
+    btnClear.addEventListener('click', () => { input.value = ''; output.value = ''; input.focus(); });
+
+    btnCopy.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(output.value); btnCopy.textContent = 'Copied!'; setTimeout(()=>btnCopy.textContent='Copy', 1200);} catch {}
+    });
+
+    btnDownload.addEventListener('click', () => {
+      const blob = new Blob([output.value], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'converted.txt'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter'){ e.preventDefault(); doConvert(); }
+    });
+
+    // Seed example
+    input.placeholder = 'ตัวอย่าง: พิมพ์ไทยบนคีย์ EN (เช่น \'l;ylfu\') หรือ อังกฤษบนคีย์ TH แล้วกด Convert';
+  </script>
+</body>
+</html>
